@@ -5921,7 +5921,11 @@ impl OrderMatchingEngine {
                 continue;
             }
 
-            let leaves = self.parent_capped_leaves(&order, remaining);
+            // Independent orders may shrink, but cannot inherit a sibling's quantity.
+            let leaves = min(
+                order.leaves_qty(),
+                self.parent_capped_leaves(&order, remaining),
+            );
             let target = order.filled_qty().checked_add(leaves).ok_or_else(|| {
                 anyhow::anyhow!("Reduce-only quantity overflow for order {client_order_id}")
             })?;
